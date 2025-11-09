@@ -1,5 +1,4 @@
 public abstract class Personagem {
-    // 1. ENCAPSULAMENTO MELHORADO - alterado para private
     private String nome;
     private int pontosVida;
     private int vidaMaxima;
@@ -8,7 +7,6 @@ public abstract class Personagem {
     private int nivel;
     private Inventario inventario;
 
-    // 2. CONSTRUTOR MELHORADO - inventário opcional
     public Personagem(String nome, int vidaMaxima, int ataque, int defesa, int nivel) {
         this(nome, vidaMaxima, ataque, defesa, nivel, new Inventario());
     }
@@ -16,50 +14,29 @@ public abstract class Personagem {
     public Personagem(String nome, int vidaMaxima, int ataque, int defesa, int nivel, Inventario inventario) {
         setNome(nome);
         setVidaMaxima(vidaMaxima);
-        this.pontosVida = vidaMaxima; // Começa com vida máxima
+        this.pontosVida = vidaMaxima;
         setAtaque(ataque);
         setDefesa(defesa);
         setNivel(nivel);
         this.inventario = (inventario != null) ? inventario : new Inventario();
     }
 
-    // 3. CONSTRUTOR DE CÓPIA MELHORADO
     public Personagem(Personagem outro) {
         this(outro.nome, outro.vidaMaxima, outro.ataque, outro.defesa, outro.nivel,
                 (outro.inventario != null) ? new Inventario(outro.inventario) : new Inventario());
         this.pontosVida = outro.pontosVida;
     }
 
-    // 4. GETTERS PÚBLICOS
-    public String getNome() {
-        return nome;
-    }
+    // GETTERS
+    public String getNome() { return nome; }
+    public int getPontosVida() { return this.pontosVida; }
+    public int getVidaMaxima() { return this.vidaMaxima; }
+    public int getAtaque() { return this.ataque; }
+    public int getDefesa() { return this.defesa; }
+    public int getNivel() { return this.nivel; }
+    public Inventario getInventario() { return this.inventario; }
 
-    public int getPontosVida() {
-        return this.pontosVida;
-    }
-
-    public int getVidaMaxima() {
-        return this.vidaMaxima;
-    }
-
-    public int getAtaque() {
-        return this.ataque;
-    }
-
-    public int getDefesa() {
-        return this.defesa;
-    }
-
-    public int getNivel() {
-        return this.nivel;
-    }
-
-    public Inventario getInventario() {
-        return this.inventario;
-    }
-
-    // 5. SETTERS COM VALIDAÇÃO
+    // SETTERS COM VALIDAÇÃO
     public void setNome(String nome) {
         if (nome == null || nome.trim().isEmpty()) {
             this.nome = "Herói Sem Nome";
@@ -77,7 +54,6 @@ public abstract class Personagem {
             throw new IllegalArgumentException("Vida máxima deve ser positiva");
         }
         this.vidaMaxima = vidaMaxima;
-        // Ajusta a vida atual se necessário
         if (this.pontosVida > vidaMaxima) {
             this.pontosVida = vidaMaxima;
         }
@@ -98,15 +74,13 @@ public abstract class Personagem {
         this.nivel = nivel;
     }
 
-    // 6. MÉTODOS DE AÇÃO COM VALIDAÇÃO MELHORADA
+    // MÉTODOS DE AÇÃO
     public void receberDano(int dano) {
         if (dano < 0) {
             throw new IllegalArgumentException("Dano não pode ser negativo");
         }
 
         this.pontosVida -= dano;
-
-        // Garante que a vida não fique negativa
         if (this.pontosVida < 0) {
             this.pontosVida = 0;
         }
@@ -123,7 +97,6 @@ public abstract class Personagem {
         return !estaVivo();
     }
 
-    // 7. MÉTODOS DE MELHORIA COM VALIDAÇÃO
     public void aumentarNivel(int niveisGanhos) {
         if (niveisGanhos <= 0) {
             throw new IllegalArgumentException("Níveis ganhos devem ser positivos");
@@ -164,20 +137,26 @@ public abstract class Personagem {
         }
     }
 
-    // 8. MÉTODOS UTILITÁRIOS ADICIONAIS
+    // MÉTODOS UTILITÁRIOS
     public double getPercentualVida() {
         return (double) this.pontosVida / this.vidaMaxima * 100;
     }
 
     public boolean precisaCurar() {
-        return this.pontosVida < this.vidaMaxima * 0.5; // Precisa curar se estiver abaixo de 50%
+        return this.pontosVida < this.vidaMaxima * 0.5;
     }
 
     public boolean estaComVidaBaixa() {
-        return this.pontosVida < this.vidaMaxima * 0.25; // Vida baixa se estiver abaixo de 25%
+        return this.pontosVida < this.vidaMaxima * 0.25;
     }
 
-    // 9. TO STRING MELHORADO
+    // MÉTODOS ABSTRATOS PARA POLIMORFISMO EXPLÍCITO
+    public abstract int atacar(Personagem alvo);
+    public abstract int usarHabilidadeEspecial(Personagem alvo);
+    public abstract void usarHabilidadeDefensiva();
+    public abstract String getDescricaoHabilidades();
+
+    // TO STRING MELHORADO
     @Override
     public String toString() {
         String estadoVida = estaVivo() ?
@@ -196,15 +175,13 @@ public abstract class Personagem {
                         "⭐ Nível: %d\n" +
                         "%s HP\n" +
                         "⚔️  Ataque: %d\n" +
-                        "🛡️  Defesa: %d",
-                emojiClasse, classe, nome, nivel, estadoVida, ataque, defesa
+                        "🛡️  Defesa: %d\n" +
+                        "🎯 %s",
+                emojiClasse, classe, nome, nivel, estadoVida, ataque, defesa,
+                getDescricaoHabilidades()
         );
     }
 
-    // 10. MÉTODO ABSTRATO - deve ser implementado pelas subclasses
-    public abstract int atacar(Personagem alvo);
-
-    // 11. MÉTODO EQUALS E HASHCODE PARA COMPARAÇÃO
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

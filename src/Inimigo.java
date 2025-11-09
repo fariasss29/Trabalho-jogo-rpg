@@ -1,16 +1,6 @@
-import java.lang.Math;
-
 public class Inimigo extends Personagem {
-
-    private String tipo; // Novo atributo para variedade de inimigos
-    private int experienciaFornecida; // Experiência que o inimigo fornece ao ser derrotado
-
-    public Inimigo(String nome, int vidaMaxima, int ataque, int defesa, int nivel) {
-        super(nome, vidaMaxima, ataque, defesa, nivel);
-        this.tipo = "Comum";
-        this.experienciaFornecida = calcularExperiencia();
-        adicionarItensIniciais();
-    }
+    private String tipo;
+    private int experienciaFornecida;
 
     public Inimigo(String nome, int vidaMaxima, int ataque, int defesa, int nivel, String tipo) {
         super(nome, vidaMaxima, ataque, defesa, nivel);
@@ -31,23 +21,19 @@ public class Inimigo extends Personagem {
 
     @Override
     public int atacar(Personagem alvo) {
-        // CORREÇÃO: usar getters em vez de atributos diretos
-        int dado = Dado.rolarD8(); // Rola D8
-
+        int dado = Dado.rolarD8();
         int danoBruto = this.getAtaque() + dado - alvo.getDefesa();
         int danoReal = Math.max(1, danoBruto);
 
         alvo.receberDano(danoReal);
-
-        // CORREÇÃO: usar getters
         System.out.println("👹 " + this.getNome() + " atacou " + alvo.getNome() +
                 " causando " + danoReal + " de dano (D8).");
 
         return danoReal;
     }
 
-    // Método de ataque especial baseado no tipo de inimigo
-    public int ataqueEspecial(Personagem alvo) {
+    @Override
+    public int usarHabilidadeEspecial(Personagem alvo) {
         System.out.println("💥 " + this.getNome() + " usa ataque especial!");
 
         int danoBase;
@@ -79,6 +65,19 @@ public class Inimigo extends Personagem {
         return danoReal;
     }
 
+    @Override
+    public void usarHabilidadeDefensiva() {
+        System.out.println("🛡️ " + this.getNome() + " se defende!");
+        int cura = Dado.rolarD4() + this.getNivel();
+        this.curar(cura);
+        System.out.println("✨ " + this.getNome() + " recupera " + cura + " de vida!");
+    }
+
+    @Override
+    public String getDescricaoHabilidades() {
+        return "Habilidades: Ataque (D8), Ataque Especial, Defesa";
+    }
+
     // Chance de usar ataque especial (30% base)
     public boolean deveUsarAtaqueEspecial() {
         return Math.random() < 0.3;
@@ -87,7 +86,7 @@ public class Inimigo extends Personagem {
     // Método unificado de ataque que decide entre normal e especial
     public int atacarDecidido(Personagem alvo) {
         if (deveUsarAtaqueEspecial()) {
-            return ataqueEspecial(alvo);
+            return usarHabilidadeEspecial(alvo);
         } else {
             return atacar(alvo);
         }
@@ -148,14 +147,16 @@ public class Inimigo extends Personagem {
         return String.format(
                 "%s %s (%s) | Nível %d\n" +
                         "❤️ %d/%d HP | ⚔️ %d ATK | 🛡️ %d DEF\n" +
-                        "⭐ Experiência: %d",
+                        "⭐ Experiência: %d\n" +
+                        "🎯 %s",
                 emoji, getNome(), tipo, getNivel(),
                 getPontosVida(), getVidaMaxima(), getAtaque(), getDefesa(),
-                experienciaFornecida
+                experienciaFornecida,
+                getDescricaoHabilidades()
         );
     }
 
-    // Factory method para criar inimigos comuns
+    // Factory methods para criar inimigos comuns
     public static Inimigo criarGoblin() {
         return new Inimigo("Goblin", 30, 8, 3, 1, "goblin");
     }

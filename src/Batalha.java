@@ -1,21 +1,15 @@
-import java.util.InputMismatchException;
-import java.util.Optional;
 import java.util.Scanner;
+import java.util.Optional;
 
 public class Batalha {
 
-    /**
-     * Ponto de entrada principal para a batalha.
-     * Modificado para receber o Scanner e o tipo específico 'Inimigo'.
-     * Retorna 'true' se o herói venceu, 'false' se fugiu ou foi derrotado.
-     */
     public static boolean batalhar(Personagem heroi, Inimigo inimigo, Scanner scanner) {
         System.out.println("\n" + "=".repeat(40));
         System.out.println("⚔️ BATALHA INICIADA ⚔️");
         System.out.println("=".repeat(40));
-        System.out.println(heroi.toString()); // Mostra status do herói
+        System.out.println(heroi.toString());
         System.out.println("\n" + " ".repeat(18) + "VS\n");
-        System.out.println(inimigo.toString()); // Mostra status do inimigo
+        System.out.println(inimigo.toString());
         System.out.println("=".repeat(40) + "\n");
 
         int turno = 1;
@@ -33,7 +27,6 @@ public class Batalha {
             // 2. Verifica se o inimigo morreu
             if (inimigo.estaMorto()) {
                 System.out.println("\n🏆 VITÓRIA! " + inimigo.getNome() + " foi derrotado!");
-                // ATUALIZAÇÃO: Passa o scanner para o método de recompensa
                 concederRecompensa(heroi, inimigo, scanner);
                 return true; // Batalha encerrada (vitória)
             }
@@ -64,54 +57,44 @@ public class Batalha {
         return false; // Caso algo inesperado ocorra
     }
 
-    /**
-     * Gerencia as ações do herói.
-     * Retorna 'true' se o herói agiu, 'false' se ele fugiu.
-     */
     private static boolean turnoHeroi(Personagem heroi, Inimigo inimigo, Scanner scanner) {
         while (true) {
             System.out.println("--- Vez de " + heroi.getNome() + " ---");
             System.out.println("1. ⚔️ Atacar (Básico)");
             System.out.println("2. ✨ Habilidade Especial");
-            System.out.println("3. 🎒 Usar Item");
-            System.out.println("4. 🏃 Fugir");
+            System.out.println("3. 🛡️ Habilidade Defensiva");
+            System.out.println("4. 🎒 Usar Item");
+            System.out.println("5. 🏃 Fugir");
             System.out.print("🎯 Escolha sua ação: ");
 
             String escolha = scanner.nextLine();
 
             switch (escolha) {
                 case "1":
-                    heroi.atacar(inimigo); // Usa o ataque básico polimórfico
+                    heroi.atacar(inimigo);
                     return true;
-
                 case "2":
-                    // Lógica de habilidades especiais (Padrão de Excelência)
-                    if (usarHabilidadeEspecial(heroi, inimigo, scanner)) {
-                        return true; // Turno foi usado
+                    // Menu de habilidades especiais - se retornar true, usou uma habilidade (termina turno), se false, voltou (continua)
+                    if (menuHabilidadesEspeciais(heroi, inimigo, scanner)) {
+                        return true;
                     }
-                    // Se o jogador voltou do menu de habilidades, o loop continua
                     break;
-
                 case "3":
-                    // Lógica de item (Padrão de Excelência)
-                    if (usarItemBatalha(heroi, scanner)) {
-                        return true; // Turno foi usado
-                    }
-                    // Se o jogador não usou item, o loop continua
-                    break;
-
+                    heroi.usarHabilidadeDefensiva();
+                    return true;
                 case "4":
+                    if (usarItemBatalha(heroi, scanner)) {
+                        return true;
+                    }
+                    break;
+                case "5":
                     return false; // Sinaliza fuga
-
                 default:
                     System.out.println("❌ Opção inválida. Tente novamente.");
             }
         }
     }
 
-    /**
-     * Gerencia o turno do Inimigo, usando a IA da classe Inimigo.
-     */
     private static void turnoInimigo(Inimigo inimigo, Personagem heroi) {
         // 1. Tenta usar item (IA da classe Inimigo)
         if (inimigo.usarItemSePrecisar()) {
@@ -122,60 +105,38 @@ public class Batalha {
         inimigo.atacarDecidido(heroi);
     }
 
-    // ##################################################################
-    // ### MUDANÇA PRINCIPAL (1/2): MÉTODO DE RECOMPENSA ATUALIZADO ###
-    // ##################################################################
-
-    /**
-     * Concede recompensas ao herói baseado no inimigo derrotado.
-     * ATUALIZAÇÃO: Agora concede PONTOS DE ATRIBUTO em vez de stats fixos.
-     */
     private static void concederRecompensa(Personagem heroi, Inimigo inimigo, Scanner scanner) {
         System.out.println("\n" + "=".repeat(40));
         System.out.println("🎉 RECOMPENSAS DA BATALHA 🎉");
         System.out.println("=".repeat(40));
 
-        // 1. Ganho de Experiência (conforme definido na classe Inimigo)
         int expGanha = inimigo.getExperienciaFornecida();
         System.out.println(String.format("⭐ Você ganhou %d pontos de experiência!", expGanha));
 
-        // 2. Level Up
         heroi.aumentarNivel(1);
         System.out.println("🌟 LEVEL UP! " + heroi.getNome() + " alcançou o Nível " + heroi.getNivel() + "!");
 
-        // 3. Cura Pós-Batalha
-        heroi.curar(heroi.getVidaMaxima()); // Cura completa após a batalha
+        heroi.curar(heroi.getVidaMaxima());
         System.out.println("✨ Sua vida foi totalmente restaurada!");
 
-        // 4. Loot Drop (Padrão de Excelência: pega itens do inventário do inimigo)
         Inventario loot = inimigo.getInventario();
         if (!loot.estaVazio()) {
             System.out.println("\n🎁 Itens largados pelo inimigo:");
             for (Item item : loot.getItens()) {
                 System.out.println("  • " + item.getNome() + " (x" + item.getQuantidade() + ")");
-                heroi.getInventario().adicionarItem(item); // Adiciona ao inventário do herói
+                heroi.getInventario().adicionarItem(item);
             }
         }
 
-        // 5. NOVA LÓGICA: Conceder Pontos de Atributo
-        // Em vez de dar stats fixos, chamamos o novo método de distribuição.
-        int pontosGanhos = 5; // Como você sugeriu!
+        int pontosGanhos = 5;
         System.out.println("\n✨ Você ganhou " + pontosGanhos + " Pontos de Atributo para distribuir!");
 
-        // Pausa para o jogador ler
         System.out.println("\n(Pressione Enter para distribuir seus pontos...)");
         scanner.nextLine();
 
         distribuirPontosDeAtributo(heroi, pontosGanhos, scanner);
     }
 
-    // ##################################################################
-    // ### MUDANÇA PRINCIPAL (2/2): NOVO MÉTODO DE DISTRIBUIÇÃO ###
-    // ##################################################################
-
-    /**
-     * Novo método para permitir ao jogador distribuir pontos de atributo.
-     */
     private static void distribuirPontosDeAtributo(Personagem heroi, int pontos, Scanner scanner) {
         int pontosRestantes = pontos;
 
@@ -224,81 +185,277 @@ public class Batalha {
 
         System.out.println("\n✅ Todos os pontos foram distribuídos!");
         System.out.println("📊 STATUS FINAIS APÓS DISTRIBUIÇÃO:");
-        // Mostra o status final completo
         System.out.println(heroi.toString());
     }
 
-
-    /**
-     * Menu de habilidades especiais.
-     * Retorna 'true' se uma habilidade foi usada, 'false' se o jogador voltou.
-     */
-    private static boolean usarHabilidadeEspecial(Personagem heroi, Inimigo inimigo, Scanner scanner) {
-        // Verifica o tipo de herói e mostra o menu apropriado
+    // 🎯 MÉTODO PRINCIPAL DO MENU DE HABILIDADES ESPECIAIS
+    private static boolean menuHabilidadesEspeciais(Personagem heroi, Personagem inimigo, Scanner scanner) {
         if (heroi instanceof Guerreiro) {
-            System.out.println("Habilidades de Guerreiro:");
-            System.out.println("1. Ataque Poderoso (2D6)");
-            System.out.println("2. Fortalecer Defesa (+D4 DEF)");
-            System.out.println("0. Voltar");
-            System.out.print("Escolha: ");
-            String escolha = scanner.nextLine();
-
-            Guerreiro g = (Guerreiro) heroi; // Cast para Guerreiro
-            if (escolha.equals("1")) {
-                g.ataquePoderoso(inimigo);
-                return true;
-            } else if (escolha.equals("2")) {
-                g.fortalecerDefesa();
-                return true;
-            }
-            return false; // Voltou
-
+            return menuHabilidadesGuerreiro((Guerreiro) heroi, inimigo, scanner);
         } else if (heroi instanceof Mago) {
-            System.out.println("Magias de Mago:");
-            System.out.println("1. Bola de Fogo (2D6)");
-            System.out.println("2. Meditar (+D4 HP)");
-            System.out.println("0. Voltar");
-            System.out.print("Escolha: ");
-            String escolha = scanner.nextLine();
-
-            Mago m = (Mago) heroi; // Cast para Mago
-            if (escolha.equals("1")) {
-                m.atacarComBolaDeFogo(inimigo);
-                return true;
-            } else if (escolha.equals("2")) {
-                m.meditar();
-                return true;
-            }
-            return false; // Voltou
-
+            return menuHabilidadesMago((Mago) heroi, inimigo, scanner);
         } else if (heroi instanceof Arqueiro) {
-            // ATUALIZADO: Habilidades do Arqueiro agora funcionam
-            System.out.println("Habilidades de Arqueiro:");
-            System.out.println("1. Tiro Certeiro (2D6)");
-            System.out.println("2. Foco Aprimorado (+D4 ATK)");
-            System.out.println("0. Voltar");
-            System.out.print("Escolha: ");
-            String escolha = scanner.nextLine();
-
-            Arqueiro a = (Arqueiro) heroi; // Cast para Arqueiro
-            if (escolha.equals("1")) {
-                a.tiroCerteiro(inimigo);
-                return true;
-            } else if (escolha.equals("2")) {
-                a.focoAprimorado();
-                return true;
-            }
-            return false; // Voltou
+            return menuHabilidadesArqueiro((Arqueiro) heroi, inimigo, scanner);
         }
 
         System.out.println("❌ Seu personagem não possui habilidades especiais.");
         return false;
     }
 
-    /**
-     * Gerencia o uso de itens durante a batalha.
-     * Retorna 'true' se um item foi usado, 'false' se o jogador voltou.
-     */
+    // ⚔️ MENU DE HABILIDADES DO GUERREIRO
+    private static boolean menuHabilidadesGuerreiro(Guerreiro guerreiro, Personagem inimigo, Scanner scanner) {
+        while (true) {
+            System.out.println("\n" + "═".repeat(50));
+            System.out.println("⚔️  HABILIDADES DO GUERREIRO");
+            System.out.println("═".repeat(50));
+            System.out.println("🔥 Fúria Disponível: " + guerreiro.getCargaFuria() + "/100");
+            System.out.println("❤️  Vida: " + guerreiro.getPontosVida() + "/" + guerreiro.getVidaMaxima());
+            System.out.println("═".repeat(50));
+
+            System.out.println("1. Golpe Esmagador - 30 Fúria");
+            System.out.println("   ⚔️  Causa 2D8 + ATQ - DEF");
+            System.out.println("   💥 Dano pesado com chance de atordoar");
+            System.out.println("   " + (guerreiro.getCargaFuria() >= 30 ? "✅ Disponível" : "❌ Fúria insuficiente"));
+
+            System.out.println("2. Fúria Descontrolada - 50 Fúria");
+            System.out.println("   🔥 Causa 2D8 + ATQ×2 - DEF");
+            System.out.println("   💀 Dano massivo, ignora parte da defesa");
+            System.out.println("   " + (guerreiro.getCargaFuria() >= 50 ? "✅ Disponível" : "❌ Fúria insuficiente"));
+
+            System.out.println("3. Posição Defensiva - 20 Fúria");
+            System.out.println("   🛡️ +D6 DEF e cura DEF/2 de HP");
+            System.out.println("   ✨ Defesa e cura em uma ação");
+            System.out.println("   " + (guerreiro.getCargaFuria() >= 20 ? "✅ Disponível" : "❌ Fúria insuficiente"));
+
+            System.out.println("4. Grito de Guerra - 25 Fúria");
+            System.out.println("   📢 +3 ATQ permanente e recupera 15 HP");
+            System.out.println("   💪 Buff ofensivo com cura");
+            System.out.println("   " + (guerreiro.getCargaFuria() >= 25 ? "✅ Disponível" : "❌ Fúria insuficiente"));
+
+            System.out.println("0. Voltar ao menu de ações");
+            System.out.println("═".repeat(50));
+            System.out.print("🎯 Escolha uma habilidade: ");
+
+            String escolha = scanner.nextLine();
+
+            switch (escolha) {
+                case "1":
+                    if (guerreiro.getCargaFuria() >= 30) {
+                        guerreiro.golpeEsmagador(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Fúria insuficiente! Necessário: 30, Disponível: " + guerreiro.getCargaFuria());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "2":
+                    if (guerreiro.getCargaFuria() >= 50) {
+                        guerreiro.usarHabilidadeEspecial(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Fúria insuficiente! Necessário: 50, Disponível: " + guerreiro.getCargaFuria());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "3":
+                    if (guerreiro.getCargaFuria() >= 20) {
+                        guerreiro.usarHabilidadeDefensiva();
+                        return true;
+                    } else {
+                        System.out.println("❌ Fúria insuficiente! Necessário: 20, Disponível: " + guerreiro.getCargaFuria());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "4":
+                    if (guerreiro.getCargaFuria() >= 25) {
+                        guerreiro.gritoDeGuerra();
+                        return true;
+                    } else {
+                        System.out.println("❌ Fúria insuficiente! Necessário: 25, Disponível: " + guerreiro.getCargaFuria());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "0":
+                    return false; // Volta ao menu de ações
+                default:
+                    System.out.println("❌ Opção inválida. Tente novamente.");
+                    System.out.println("Pressione Enter para continuar...");
+                    scanner.nextLine();
+            }
+        }
+    }
+
+    // 🔮 MENU DE HABILIDADES DO MAGO
+    private static boolean menuHabilidadesMago(Mago mago, Personagem inimigo, Scanner scanner) {
+        while (true) {
+            System.out.println("\n" + "═".repeat(50));
+            System.out.println("🔮 MAGIAS DO MAGO");
+            System.out.println("═".repeat(50));
+            System.out.println("🔵 Mana Disponível: " + mago.getMana() + "/100");
+            System.out.println("❤️  Vida: " + mago.getPontosVida() + "/" + mago.getVidaMaxima());
+            System.out.println("═".repeat(50));
+
+            System.out.println("1. Bola de Fogo - 30 Mana");
+            System.out.println("   🔥 Causa 3D6 + ATQ - DEF");
+            System.out.println("   💥 Dano em área, chance de queimar");
+            System.out.println("   " + (mago.getMana() >= 30 ? "✅ Disponível" : "❌ Mana insuficiente"));
+
+            System.out.println("2. Raio Arcano - 25 Mana");
+            System.out.println("   ⚡ Causa 2D8 + ATQ - DEF/2");
+            System.out.println("   ✨ Ignora metade da defesa");
+            System.out.println("   " + (mago.getMana() >= 25 ? "✅ Disponível" : "❌ Mana insuficiente"));
+
+            System.out.println("3. Barreira Arcana - 15 Mana");
+            System.out.println("   🛡️ Cura D8 + NVL×2 de HP");
+            System.out.println("   💫 Cura baseada no nível");
+            System.out.println("   " + (mago.getMana() >= 15 ? "✅ Disponível" : "❌ Mana insuficiente"));
+
+            System.out.println("4. Meditação Profunda - 0 Mana");
+            System.out.println("   🧘 Recupera 25 + NVL×5 de Mana");
+            System.out.println("   🔄 Recarga de recursos");
+            System.out.println("   ✅ Sempre disponível");
+
+            System.out.println("0. Voltar ao menu de ações");
+            System.out.println("═".repeat(50));
+            System.out.print("🎯 Escolha uma magia: ");
+
+            String escolha = scanner.nextLine();
+
+            switch (escolha) {
+                case "1":
+                    if (mago.getMana() >= 30) {
+                        mago.usarHabilidadeEspecial(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Mana insuficiente! Necessário: 30, Disponível: " + mago.getMana());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "2":
+                    if (mago.getMana() >= 25) {
+                        mago.raioArcano(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Mana insuficiente! Necessário: 25, Disponível: " + mago.getMana());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "3":
+                    if (mago.getMana() >= 15) {
+                        mago.usarHabilidadeDefensiva();
+                        return true;
+                    } else {
+                        System.out.println("❌ Mana insuficiente! Necessário: 15, Disponível: " + mago.getMana());
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "4":
+                    mago.meditar();
+                    return true;
+                case "0":
+                    return false; // Volta ao menu de ações
+                default:
+                    System.out.println("❌ Opção inválida. Tente novamente.");
+                    System.out.println("Pressione Enter para continuar...");
+                    scanner.nextLine();
+            }
+        }
+    }
+
+    // 🏹 MENU DE HABILIDADES DO ARQUEIRO
+    private static boolean menuHabilidadesArqueiro(Arqueiro arqueiro, Personagem inimigo, Scanner scanner) {
+        while (true) {
+            System.out.println("\n" + "═".repeat(50));
+            System.out.println("🏹 HABILIDADES DO ARQUEIRO");
+            System.out.println("═".repeat(50));
+            System.out.println("🎯 Precisão Disponível: " + arqueiro.getPrecisao() + "%");
+            System.out.println("❤️  Vida: " + arqueiro.getPontosVida() + "/" + arqueiro.getVidaMaxima());
+            System.out.println("═".repeat(50));
+
+            System.out.println("1. Tiro Certeiro - 20% Precisão");
+            System.out.println("   🎯 Causa 2D8 + D4 + ATQ - DEF/2");
+            System.out.println("   💫 Ignora metade da defesa");
+            System.out.println("   " + (arqueiro.getPrecisao() >= 20 ? "✅ Disponível" : "❌ Precisão insuficiente"));
+
+            System.out.println("2. Chuva de Flechas - 30% Precisão");
+            System.out.println("   🌧️ Causa 3D6 + ATQ - DEF");
+            System.out.println("   🔥 Dano múltiplo, difícil de esquivar");
+            System.out.println("   " + (arqueiro.getPrecisao() >= 30 ? "✅ Disponível" : "❌ Precisão insuficiente"));
+
+            System.out.println("3. Foco Aprimorado - 10% Precisão");
+            System.out.println("   👁️ +D6 ATQ e +15% Precisão");
+            System.out.println("   💪 Buff ofensivo duradouro");
+            System.out.println("   " + (arqueiro.getPrecisao() >= 10 ? "✅ Disponível" : "❌ Precisão insuficiente"));
+
+            System.out.println("4. Disparo Rápido - 15% Precisão");
+            System.out.println("   🏹 Causa 2D4 + ATQ - DEF, ataca duas vezes");
+            System.out.println("   ⚡ Ataque duplo rápido");
+            System.out.println("   " + (arqueiro.getPrecisao() >= 15 ? "✅ Disponível" : "❌ Precisão insuficiente"));
+
+            System.out.println("0. Voltar ao menu de ações");
+            System.out.println("═".repeat(50));
+            System.out.print("🎯 Escolha uma habilidade: ");
+
+            String escolha = scanner.nextLine();
+
+            switch (escolha) {
+                case "1":
+                    if (arqueiro.getPrecisao() >= 20) {
+                        arqueiro.usarHabilidadeEspecial(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Precisão insuficiente! Necessário: 20%, Disponível: " + arqueiro.getPrecisao() + "%");
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "2":
+                    if (arqueiro.getPrecisao() >= 30) {
+                        arqueiro.chuvaDeFlechas(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Precisão insuficiente! Necessário: 30%, Disponível: " + arqueiro.getPrecisao() + "%");
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "3":
+                    if (arqueiro.getPrecisao() >= 10) {
+                        arqueiro.usarHabilidadeDefensiva();
+                        return true;
+                    } else {
+                        System.out.println("❌ Precisão insuficiente! Necessário: 10%, Disponível: " + arqueiro.getPrecisao() + "%");
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "4":
+                    if (arqueiro.getPrecisao() >= 15) {
+                        arqueiro.disparoRapido(inimigo);
+                        return true;
+                    } else {
+                        System.out.println("❌ Precisão insuficiente! Necessário: 15%, Disponível: " + arqueiro.getPrecisao() + "%");
+                        System.out.println("Pressione Enter para continuar...");
+                        scanner.nextLine();
+                    }
+                    break;
+                case "0":
+                    return false; // Volta ao menu de ações
+                default:
+                    System.out.println("❌ Opção inválida. Tente novamente.");
+                    System.out.println("Pressione Enter para continuar...");
+                    scanner.nextLine();
+            }
+        }
+    }
+
     private static boolean usarItemBatalha(Personagem heroi, Scanner scanner) {
         System.out.println("\n🎒 INVENTÁRIO DE BATALHA:");
         System.out.println(heroi.getInventario().listarItens());
@@ -315,7 +472,6 @@ public class Batalha {
             return false;
         }
 
-        // Padrão de Excelência: Usar Optional
         Optional<Item> itemOptional = heroi.getInventario().buscarItemPorNome(nomeItem);
 
         if (itemOptional.isEmpty()) {
@@ -325,21 +481,15 @@ public class Batalha {
 
         Item item = itemOptional.get();
 
-        // Tenta remover 1 unidade do item
         if (heroi.getInventario().removerUmaUnidade(item.getNome())) {
-            // Aplica o efeito (lógica similar à da classe Main)
             aplicarEfeitoItem(heroi, item);
-            return true; // Item foi usado, turno encerrado
+            return true;
         } else {
-            System.out.println("❌ Erro ao usar o item (possivelmente bug?).");
+            System.out.println("❌ Erro ao usar o item.");
             return false;
         }
     }
 
-    /**
-     * Aplica o efeito de um item no herói (método auxiliar).
-     * Padrão de Excelência: Usa getTipoEfeito() e getValorEfeito() da classe Item.
-     */
     private static void aplicarEfeitoItem(Personagem heroi, Item item) {
         String tipoEfeito = item.getTipoEfeito();
         int valorEfeito = item.getValorEfeito();

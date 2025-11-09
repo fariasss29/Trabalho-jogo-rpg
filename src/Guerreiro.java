@@ -1,82 +1,126 @@
-// import java.lang.Math; // Não é mais necessário
-
 public class Guerreiro extends Personagem {
+    private int cargaFuria; // Novo recurso único para o Guerreiro
 
-    /**
-     * Construtor principal.
-     * Chama o construtor de 5 argumentos da superclasse, que já cuida
-     * da inicialização do inventário por padrão.
-     */
     public Guerreiro(String nome, int vidaMaxima, int ataque, int defesa, int nivel) {
         super(nome, vidaMaxima, ataque, defesa, nivel);
+        this.cargaFuria = 0;
     }
 
-    /**
-     * Construtor de Cópia.
-     */
     public Guerreiro(Guerreiro outroGuerreiro) {
         super(outroGuerreiro);
+        this.cargaFuria = outroGuerreiro.cargaFuria;
     }
 
-    /**
-     * Ataque básico do Guerreiro.
-     * PADRÃO DE EXCELÊNCIA:
-     * 1. Usa a classe 'Dado' (D8, conforme definido no seu Main.java).
-     * 2. Usa 'getters' para atributos encapsulados (getAtaque, getDefesa, getNome).
-     */
     @Override
     public int atacar(Personagem alvo) {
-        // Usa D8, conforme a descrição da classe no seu Main.java
         int dado = Dado.rolarD8();
-
-        // Usa getters para acessar atributos (padrão de encapsulamento)
         int danoBruto = this.getAtaque() + dado - alvo.getDefesa();
         int danoReal = Math.max(1, danoBruto);
 
-        alvo.receberDano(danoReal);
+        // Acumula fúria ao atacar
+        cargaFuria = Math.min(100, cargaFuria + 10);
 
-        // Usa getters para os nomes e adiciona emoji para consistência
+        alvo.receberDano(danoReal);
         System.out.println("⚔️ " + this.getNome() + " ataca " +
                 alvo.getNome() + " com sua espada, causando " + danoReal + " de dano (D8).");
+        System.out.println("🔥 Fúria: " + cargaFuria + "/100");
 
         return danoReal;
     }
 
-    /**
-     * MÉTODO ADICIONAL: Ataque especial para o Guerreiro.
-     * Causa mais dano, simulando 2 dados D6.
-     */
-    public int ataquePoderoso(Personagem alvo) {
-        System.out.println("💥 " + this.getNome() + " usa Ataque Poderoso!");
+    @Override
+    public int usarHabilidadeEspecial(Personagem alvo) {
+        if (cargaFuria < 50) {
+            System.out.println("❌ Fúria insuficiente! Necessário 50, atual: " + cargaFuria);
+            return 0;
+        }
 
-        int dadoDano = Dado.rolarD6() + Dado.rolarD6(); // 2D6
-        int danoBase = this.getAtaque() + dadoDano;
-        int danoReal = Math.max(3, danoBase - alvo.getDefesa());
+        System.out.println("💥 " + this.getNome() + " libera sua FÚRIA DESCONTROLADA!");
+        cargaFuria -= 50;
+
+        int dadoDano = Dado.rolarD8() + Dado.rolarD8(); // 2D8
+        int danoBase = this.getAtaque() * 2 + dadoDano; // Dano dobrado
+        int danoReal = Math.max(5, danoBase - alvo.getDefesa());
 
         alvo.receberDano(danoReal);
-        System.out.println("🔥 O golpe esmagador causa " + danoReal + " de dano em " + alvo.getNome() + "!");
+        System.out.println("🔥 Fúria Descontrolada causa " + danoReal + " de dano em " + alvo.getNome() + "!");
+        System.out.println("🔥 Fúria restante: " + cargaFuria + "/100");
 
         return danoReal;
     }
 
-    /**
-     * MÉTODO ADICIONAL: Habilidade de defesa do Guerreiro.
-     * Aumenta a defesa permanentemente (ou poderia ser temporário em uma Batalha).
-     */
-    public void fortalecerDefesa() {
-        int bonusDefesa = Dado.rolarD4(); // Aumenta a defesa em 1-4
-        this.aumentarDefesa(bonusDefesa); // Usa o método seguro da superclasse
+    @Override
+    public void usarHabilidadeDefensiva() {
+        System.out.println("🛡️ " + this.getNome() + " assume Posição Defensiva!");
 
-        System.out.println("🛡️ " + this.getNome() + " se concentra e fortalece sua defesa em +" + bonusDefesa + "!");
+        int bonusDefesa = Dado.rolarD6() + this.getNivel();
+        this.aumentarDefesa(bonusDefesa);
+
+        // Cura baseada na defesa
+        int cura = this.getDefesa() / 2;
+        this.curar(cura);
+
+        System.out.println("✨ Defesa aumentada em +" + bonusDefesa + " e recuperou " + cura + " HP!");
         System.out.println("🛡️ Defesa atual: " + this.getDefesa());
     }
 
-    /**
-     * MÉTODO ADICIONAL: Sobrescreve toString para incluir habilidades.
-     * Segue o padrão da classe Mago.
-     */
     @Override
-    public String toString() {
-        return super.toString() + "\n🎯 Habilidades: Ataque (D8), Ataque Poderoso (2D6)";
+    public String getDescricaoHabilidades() {
+        return "Habilidades: Ataque (D8), Fúria Descontrolada (2D8), Posição Defensiva";
+    }
+
+    public int getCargaFuria() {
+        return cargaFuria;
+    }
+
+    public void resetarFuria() {
+        this.cargaFuria = 0;
+    }
+
+    // ######################################################
+    // ### HABILIDADES ADICIONADAS CONFORME SOLICITADO    ###
+    // ######################################################
+
+    public int golpeEsmagador(Personagem alvo) {
+        if (cargaFuria < 30) {
+            System.out.println("❌ Fúria insuficiente! Necessário 30, atual: " + cargaFuria);
+            return 0;
+        }
+
+        System.out.println("💥 " + this.getNome() + " usa GOLPE ESMAGADOR!");
+        cargaFuria -= 30;
+
+        int dadoDano = Dado.rolarD8() + Dado.rolarD8(); // 2D8
+        int danoBase = this.getAtaque() + dadoDano;
+        int danoReal = Math.max(5, danoBase - alvo.getDefesa());
+
+        // Chance de atordoar (20%)
+        if (Dado.rolarD20() > 16) {
+            System.out.println("😵 O inimigo ficou atordoado pelo impacto!");
+            danoReal += 5; // Dano extra
+        }
+
+        alvo.receberDano(danoReal);
+        System.out.println("💥 Impacto esmagador causa " + danoReal + " de dano em " + alvo.getNome() + "!");
+        System.out.println("🔥 Fúria restante: " + cargaFuria + "/100");
+
+        return danoReal;
+    }
+
+    public void gritoDeGuerra() {
+        if (cargaFuria < 25) {
+            System.out.println("❌ Fúria insuficiente! Necessário 25, atual: " + cargaFuria);
+            return;
+        }
+
+        System.out.println("📢 " + this.getNome() + " solta um GRITO DE GUERRA!");
+        cargaFuria -= 25;
+
+        this.aumentarAtaque(3);
+        this.curar(15);
+
+        System.out.println("⚔️ Ataque aumentado em +3 permanentemente!");
+        System.out.println("❤️ Recuperou 15 pontos de vida!");
+        System.out.println("🔥 Fúria restante: " + cargaFuria + "/100");
     }
 }
