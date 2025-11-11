@@ -1,10 +1,15 @@
 import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class Item implements Comparable<Item> {
     private String nome;
     private String descricao;
     private String efeito;
     private int quantidade;
+
+    private static final Random RANDOM = new Random();
 
     public Item(String nome, String descricao, String efeito, int quantidade) {
         setNome(nome);
@@ -17,6 +22,39 @@ public class Item implements Comparable<Item> {
     public String getDescricao() { return descricao; }
     public String getEfeito() { return efeito; }
     public int getQuantidade() { return quantidade; }
+
+
+    public static final List<Item> LISTA_ITENS_LIXO = new ArrayList<>();
+    public static final List<Item> LISTA_ITENS_COMUNS = new ArrayList<>();
+    public static final List<Item> LISTA_ITENS_RAROS = new ArrayList<>();
+    public static final List<Item> LISTA_ITENS_LENDARIOS = new ArrayList<>();
+
+    static {
+        // --- ITENS LIXO
+        LISTA_ITENS_LIXO.add(new Item("Trapo", "Apenas um trapo velho", "LIXO:0", 1));
+        LISTA_ITENS_LIXO.add(new Item("Pedra Quebrada", "Inútil e pesado", "LIXO:0", 1));
+
+        // --- ITENS COMUNS / MÉDIOS
+        LISTA_ITENS_COMUNS.add(new Item("Poção Fraca", "Restaura 10 HP", "CURA:10", 1));
+        LISTA_ITENS_COMUNS.add(new Item("Poção de Cura", "Restaura 30 HP", "CURA:30", 1));
+        LISTA_ITENS_COMUNS.add(new Item("Poção de Cura Grande", "Restaura 60 HP", "CURA:60", 1));
+        LISTA_ITENS_COMUNS.add(new Item("Escudo Velho", "Aumente DEF em 3", "DEF_UP:3", 1));
+        LISTA_ITENS_COMUNS.add(new Item("Elixir de Energia", "Restaura 15 Mana/Fúria", "RECURSO:15", 1));
+        LISTA_ITENS_COMUNS.add(new Item("Elixir de Ataque", "Aumente ATK em 5", "ATK_UP:5", 1));
+        LISTA_ITENS_COMUNS.add(new Item("Pedra de Afiar", "Aumenta ATK em 3", "ATK_UP:3", 1));
+
+        // --- ITENS RAROS
+        LISTA_ITENS_RAROS.add(new Item("Poção Épica", "Restaura 100 HP", "CURA:100", 1));
+        LISTA_ITENS_RAROS.add(new Item("Amuleto da Vida", "Aumenta HP Máximo em 25", "HP_UP:25", 1));
+        LISTA_ITENS_RAROS.add(new Item("Elixir do Poder", "Aumenta ATK em 8", "ATK_UP:8", 1));
+        LISTA_ITENS_RAROS.add(new Item("Armadura Grega Antiga", "Aumenta DEF em 8", "DEF_UP:8", 1));
+        LISTA_ITENS_RAROS.add(new Item("Arma Universal", "Aumenta ATK em 15", "ATK_UP:15", 1));
+
+        // --- ITENS LENDARIOS
+        LISTA_ITENS_LENDARIOS.add(new Item("Armadura Rúnica", "Aumenta DEF em 10", "DEF_UP:10", 1));
+        LISTA_ITENS_LENDARIOS.add(new Item("Arma Celestial", "Aumenta ATK em 20", "ATK_UP:20", 1));
+
+    }
 
     public void setNome(String nome) {
         if (nome == null || nome.trim().isEmpty()) {

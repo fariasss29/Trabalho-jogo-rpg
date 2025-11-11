@@ -18,9 +18,11 @@ public class Batalha {
             System.out.println("--- TURNO " + turno + " ---");
 
             // 1. Turno do Herói
-            boolean heroiFugiu = !turnoHeroi(heroi, inimigo, scanner);
-            if (heroiFugiu) {
-                System.out.println("🏃 " + heroi.getNome() + " fugiu da batalha!");
+            //boolean acaoRealizada = turnoHeroi(heroi, inimigo, scanner);
+            int resultadoTurno = turnoHeroi(heroi, inimigo, scanner);
+
+            if (resultadoTurno == 1) {
+               System.out.println("🏃 " + heroi.getNome() + " fugiu da batalha!");
                 return false; // Batalha encerrada (fuga)
             }
 
@@ -57,7 +59,7 @@ public class Batalha {
         return false; // Caso algo inesperado ocorra
     }
 
-    private static boolean turnoHeroi(Personagem heroi, Inimigo inimigo, Scanner scanner) {
+    private static int turnoHeroi(Personagem heroi, Inimigo inimigo, Scanner scanner) {
         while (true) {
             System.out.println("--- Vez de " + heroi.getNome() + " ---");
             System.out.println("1. ⚔️ Atacar (Básico)");
@@ -72,26 +74,66 @@ public class Batalha {
             switch (escolha) {
                 case "1":
                     heroi.atacar(inimigo);
-                    return true;
+                    return 0;
                 case "2":
                     // Menu de habilidades especiais - se retornar true, usou uma habilidade (termina turno), se false, voltou (continua)
                     if (menuHabilidadesEspeciais(heroi, inimigo, scanner)) {
-                        return true;
+                        return 0;
                     }
                     break;
                 case "3":
                     heroi.usarHabilidadeDefensiva();
-                    return true;
+                    return 0;
                 case "4":
                     if (usarItemBatalha(heroi, scanner)) {
-                        return true;
+                        return 0;
                     }
                     break;
                 case "5":
-                    return false; // Sinaliza fuga
+                    int resultadoFuga = tentarFugir(heroi, inimigo);
+
+                    if (resultadoFuga == 1){
+                        return 1;
+                    }
+                    return 0;
+
                 default:
                     System.out.println("❌ Opção inválida. Tente novamente.");
             }
+        }
+    }
+
+    private static int tentarFugir(Personagem heroi, Inimigo inimigo) {
+
+        int dado = Dado.rolarD20();
+
+        int dificuldadeFuga = 12 + inimigo.getNivel();
+
+        int bonusHeroi = heroi.getNivel();
+
+        int resultado = dado + bonusHeroi;
+
+        System.out.println("\n🏃 " + heroi.getNome() + " tenta fugir!");
+        System.out.println("Dados rolam...");
+
+// 1. Exibe o D20 e o Bônus
+        System.out.println(String.format("🎲 D20: %d + Bônus de Nível (%d) = %d",
+                dado, bonusHeroi, resultado));
+
+// 2. Exibe a Dificuldade e o Resultado Final
+        System.out.println(String.format("Resultado Final: %d (Necessário: %d)",
+                resultado, dificuldadeFuga));
+
+        if (resultado >= dificuldadeFuga) {
+            System.out.println("✅ SUCESSO! Você escapa da batalha!");
+            return 1;
+        } else {
+            System.out.println("❌ FALHA! O inimigo impede sua fuga. Você perde seu turno.");
+            if (dado < 5) {
+                System.out.println("💢 O inimigo aproveita e ataca!");
+                inimigo.atacarDecidido(heroi); // Inimigo ataca imediatamente
+            }
+            return 2;
         }
     }
 
@@ -103,6 +145,34 @@ public class Batalha {
 
         // 2. Se não se curou, ataca (IA da classe Inimigo)
         inimigo.atacarDecidido(heroi);
+    }
+
+    private static void realizarSaque(Personagem heroi, Inimigo inimigo, Scanner scanner) {
+        Inventario loot = inimigo.getInventario();
+
+        if (loot.estaVazio()) {
+            System.out.println("📭 O inimigo não deixou nenhum item.");
+            return;
+        }
+
+        System.out.println("\n🎁 Inimigo deixou cair itens, deseja pega-lo? (S/N)");
+        System.out.print("Sua escolha: ");
+
+        String escolha = scanner.nextLine().trim();
+
+        if (escolha.equalsIgnoreCase("S")) {
+            System.out.println("\n🎁 Itens coletados:");
+
+            System.out.println(loot.listarItens());
+
+            loot.transferirPara(heroi.getInventario());
+
+            System.out.println("✅ Todos os itens foram transferidos para o seu inventário!");
+        } else {
+
+            System.out.println("❌ Você ignora o saque e segue em frente.");
+        }
+
     }
 
     private static void concederRecompensa(Personagem heroi, Inimigo inimigo, Scanner scanner) {
@@ -119,16 +189,9 @@ public class Batalha {
         heroi.curar(heroi.getVidaMaxima());
         System.out.println("✨ Sua vida foi totalmente restaurada!");
 
-        Inventario loot = inimigo.getInventario();
-        if (!loot.estaVazio()) {
-            System.out.println("\n🎁 Itens largados pelo inimigo:");
-            for (Item item : loot.getItens()) {
-                System.out.println("  • " + item.getNome() + " (x" + item.getQuantidade() + ")");
-                heroi.getInventario().adicionarItem(item);
-            }
-        }
+        realizarSaque(heroi, inimigo, scanner);
 
-        int pontosGanhos = 5;
+        int pontosGanhos = 3;
         System.out.println("\n✨ Você ganhou " + pontosGanhos + " Pontos de Atributo para distribuir!");
 
         System.out.println("\n(Pressione Enter para distribuir seus pontos...)");
@@ -151,7 +214,7 @@ public class Batalha {
             System.out.println("-".repeat(40));
             System.out.println("Onde você quer gastar 1 ponto?");
             System.out.println("1. +5 Vida Máxima");
-            System.out.println("2. +1 Ataque");
+            System.out.println("2. +3 Ataque");
             System.out.println("3. +1 Defesa");
             System.out.print("🎯 Escolha (1-3): ");
 
@@ -164,7 +227,7 @@ public class Batalha {
                     pontosRestantes--;
                     break;
                 case "2":
-                    heroi.aumentarAtaque(1);
+                    heroi.aumentarAtaque(3);
                     System.out.println("\n⚔️ Ataque aumentado para " + heroi.getAtaque() + "!");
                     pontosRestantes--;
                     break;
@@ -188,7 +251,6 @@ public class Batalha {
         System.out.println(heroi.toString());
     }
 
-    // 🎯 MÉTODO PRINCIPAL DO MENU DE HABILIDADES ESPECIAIS
     private static boolean menuHabilidadesEspeciais(Personagem heroi, Personagem inimigo, Scanner scanner) {
         if (heroi instanceof Guerreiro) {
             return menuHabilidadesGuerreiro((Guerreiro) heroi, inimigo, scanner);
@@ -458,31 +520,36 @@ public class Batalha {
 
     private static boolean usarItemBatalha(Personagem heroi, Scanner scanner) {
         System.out.println("\n🎒 INVENTÁRIO DE BATALHA:");
+
         System.out.println(heroi.getInventario().listarItens());
 
-        if (heroi.getInventario().estaVazio()) {
-            System.out.println("📭 O inventário está vazio.");
+        System.out.println("Qual item deseja usar? Digite o NÚMERO do item (ou 0 para voltar):");
+
+        if (!scanner.hasNextInt()) {
+            System.out.println("❌ Entrada inválida. Digite um número.");
+            scanner.nextLine();
             return false;
         }
 
-        System.out.print("💬 Digite o nome do item para usar (ou 'voltar'): ");
-        String nomeItem = scanner.nextLine();
+        int escolha = scanner.nextInt();
+        scanner.nextLine();
 
-        if (nomeItem.equalsIgnoreCase("voltar")) {
+        if (escolha == 0) {
+            return false; // Volta ao menu de batalha
+        }
+
+        // 2. Busca o item pelo índice
+        Item itemParaUso = heroi.getInventario().buscarItemPorIndice(escolha);
+
+        if (itemParaUso == null) {
+            System.out.println("❌ Número de item inválido.");
             return false;
         }
 
-        Optional<Item> itemOptional = heroi.getInventario().buscarItemPorNome(nomeItem);
+        // 3. Processa o uso do item
+        if (heroi.getInventario().removerUmaUnidade(itemParaUso.getNome())) {
 
-        if (itemOptional.isEmpty()) {
-            System.out.println("❌ Item não encontrado no inventário.");
-            return false;
-        }
-
-        Item item = itemOptional.get();
-
-        if (heroi.getInventario().removerUmaUnidade(item.getNome())) {
-            aplicarEfeitoItem(heroi, item);
+            aplicarEfeitoItem(heroi, itemParaUso);
             return true;
         } else {
             System.out.println("❌ Erro ao usar o item.");

@@ -78,12 +78,12 @@ public class Inimigo extends Personagem {
         return "Habilidades: Ataque (D8), Ataque Especial, Defesa";
     }
 
-    // Chance de usar ataque especial (30% base)
+
     public boolean deveUsarAtaqueEspecial() {
         return Math.random() < 0.3;
     }
 
-    // Método unificado de ataque que decide entre normal e especial
+
     public int atacarDecidido(Personagem alvo) {
         if (deveUsarAtaqueEspecial()) {
             return usarHabilidadeEspecial(alvo);
@@ -92,36 +92,37 @@ public class Inimigo extends Personagem {
         }
     }
 
-    // Calcular experiência baseada nos atributos
     private int calcularExperiencia() {
         int base = this.getNivel() * 10;
         int bonus = (this.getAtaque() + this.getDefesa() + this.getVidaMaxima() / 10);
         return base + bonus;
     }
 
-    // Adicionar itens iniciais baseados no tipo de inimigo
     private void adicionarItensIniciais() {
+
+        boolean exibirMensagem = false;
+
         switch (this.tipo.toLowerCase()) {
             case "bruxa":
-                getInventario().adicionarItem(new Item("Poção Misteriosa", "Efeito desconhecido", "ATK_UP:5", 1));
+                getInventario().adicionarItem(new Item("Poção Misteriosa", "Efeito desconhecido", "ATK_UP:5", 1), exibirMensagem);
                 break;
             case "orc":
-                getInventario().adicionarItem(new Item("Pele Resistente", "Pele dura de orc", "DEF_UP:3", 1));
+                getInventario().adicionarItem(new Item("Pele Resistente", "Pele dura de orc", "DEF_UP:3", 1), exibirMensagem);
                 break;
             case "lobo":
                 if (Math.random() < 0.5) {
-                    getInventario().adicionarItem(new Item("Dente de Lobo", "Afiado e perigoso", "ATK_UP:2", 1));
+                    getInventario().adicionarItem(new Item("Dente de Lobo", "Afiado e perigoso", "ATK_UP:2", 1), exibirMensagem);
                 }
                 break;
             default:
-                // Inimigos comuns têm chance de ter poção de cura
+
                 if (Math.random() < 0.3) {
-                    getInventario().adicionarItem(new Item("Poção de Cura", "Restaura 20 HP", "CURA:20", 1));
+                    getInventario().adicionarItem(new Item("Poção de Cura", "Restaura 20 HP", "CURA:20", 1), exibirMensagem);
                 }
         }
     }
 
-    // Método para o inimigo usar itens quando está com vida baixa
+
     public boolean usarItemSePrecisar() {
         if (this.getPercentualVida() < 30 && !getInventario().estaVazio()) {
             // Procura por poções de cura
@@ -136,7 +137,7 @@ public class Inimigo extends Personagem {
         return false;
     }
 
-    // Sobrescrever toString para informações melhores
+
     @Override
     public String toString() {
         String emoji = "👹";
@@ -156,7 +157,6 @@ public class Inimigo extends Personagem {
         );
     }
 
-    // Factory methods para criar inimigos comuns
     public static Inimigo criarGoblin() {
         return new Inimigo("Goblin", 30, 8, 3, 1, "goblin");
     }

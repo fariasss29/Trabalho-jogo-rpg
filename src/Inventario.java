@@ -31,7 +31,7 @@ public class Inventario implements Cloneable {
         return this.itens.isEmpty();
     }
 
-    public void adicionarItem(Item novoItem) {
+    public void adicionarItem(Item novoItem, boolean exibirMensagem) {
         if (novoItem == null) {
             throw new IllegalArgumentException("Item não pode ser nulo");
         }
@@ -45,11 +45,18 @@ public class Inventario implements Cloneable {
 
         if (itemExistente.isPresent()) {
             itemExistente.get().adicionarQuantidade(novoItem.getQuantidade());
-            System.out.println("📥 " + novoItem.getNome() + " adicionado. Quantidade: " + itemExistente.get().getQuantidade());
+            if (exibirMensagem) {
+                System.out.println("📥 " + novoItem.getNome() + " adicionado. Quantidade: " + itemExistente.get().getQuantidade());
+            }
         } else {
             this.itens.add(novoItem.copiar());
-            System.out.println("🆕 " + novoItem.getNome() + " adicionado ao inventário.");
+            if (exibirMensagem) {
+                System.out.println("🆕 " + novoItem.getNome() + " adicionado ao inventário.");
+            }
         }
+    }
+    public void adicionarItem(Item novoItem) {
+        adicionarItem(novoItem, true);
     }
 
     public boolean removerItem(Item itemParaRemover) {
@@ -106,6 +113,20 @@ public class Inventario implements Cloneable {
                 .orElse(0);
     }
 
+
+    public Item buscarItemPorIndice(int indice) {
+        // O índice da lista (0-baseado) é o índice do usuário - 1
+        int indiceLista = indice - 1;
+
+        // Verifica se o índice é válido
+        if (indiceLista >= 0 && indiceLista < itens.size()) {
+            return itens.get(indiceLista);
+        }
+        return null; // Retorna null se for um índice inválido
+    }
+
+    // DENTRO DA CLASSE Inventario.java
+
     public String listarItens() {
         if (itens.isEmpty()) {
             return "📭 Inventário vazio.";
@@ -114,18 +135,22 @@ public class Inventario implements Cloneable {
         Collections.sort(itens);
 
         StringBuilder lista = new StringBuilder();
-        lista.append("🎒 INVENTÁRIO (").append(getTamanho()).append(" tipos de itens):\n");
-        lista.append("═".repeat(40)).append("\n");
+
+        lista.append("🎒 ITENS NO INVENTÁRIO:\n");
+        lista.append("═".repeat(50)).append("\n");
 
         int totalItens = 0;
-        for (Item item : itens) {
-            lista.append("• ").append(item).append("\n");
+
+        for (int i = 0; i < itens.size(); i++) {
+            Item item = itens.get(i);
+
+            lista.append(String.format("%3d. %s\n", i + 1, item.toString()));
             totalItens += item.getQuantidade();
         }
 
-        lista.append("═".repeat(40)).append("\n");
-        lista.append("📊 Total de itens: ").append(totalItens).append("\n");
 
+        lista.append("═".repeat(50)).append("\n");
+        lista.append("📊 Total de unidades: ").append(totalItens).append("\n");
         return lista.toString();
     }
 
@@ -171,7 +196,7 @@ public class Inventario implements Cloneable {
 
     public void limparInventario() {
         itens.clear();
-        System.out.println("🗑️  Inventário limpo.");
+        //System.out.println("🗑️  Inventário limpo.");
     }
 
     public void transferirPara(Inventario outroInventario) {
@@ -184,6 +209,8 @@ public class Inventario implements Cloneable {
         }
         this.limparInventario();
     }
+
+
 
     @Override
     public Inventario clone() {
@@ -216,6 +243,20 @@ public class Inventario implements Cloneable {
 
     @Override
     public String toString() {
-        return listarItens();
+        if (itens.isEmpty()) {
+            return "🎒 O inventário está vazio.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("== INVENTÁRIO (Total: ").append(itens.size()).append(" itens) ==\n");
+
+        // Usa um loop para adicionar o índice (1, 2, 3...)
+        for (int i = 0; i < itens.size(); i++) {
+            // i + 1 é o índice que o usuário verá
+            sb.append(String.format("%3d. %s\n", i + 1, itens.get(i).toString()));
+        }
+
+        sb.append("=====================================\n");
+        return sb.toString();
     }
 }

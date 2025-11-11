@@ -24,6 +24,8 @@ public class GameManager {
         inicializarInimigos();
     }
 
+    private static final Random RANDOM = new Random();
+
     public void iniciarJogo() {
         System.out.println("=========================================");
         System.out.println("     🏰 RPG DE TEXTO - JORNADA ÉPICA");
@@ -32,11 +34,11 @@ public class GameManager {
         String nomeHeroi = exibirIntroducao();
         this.heroi = escolherClasse(nomeHeroi);
 
-        System.out.println("\n🎒 Equipando itens iniciais...");
+        System.out.println("🎒 Equipando itens iniciais...");
         pausar(1000);
         heroi.getInventario().adicionarItem(new Item("Poção de Cura", "Restaura 30 HP", "CURA:30", 2));
         pausar(500);
-        heroi.getInventario().adicionarItem(new Item("Elixir de Força", "Aumenta ataque em 5", "ATK_UP:5", 1));
+        heroi.getInventario().adicionarItem(new Item("Elixir de Ataque", "Aumente ATK em 5", "ATK_UP:5", 1));
         pausar(500);
 
         System.out.println("\n" + "=".repeat(50));
@@ -71,7 +73,7 @@ public class GameManager {
         imprimirComPausa("...deixavam seus súditos em situações miseráveis...", 2000);
         imprimirComPausa("...nascia um bebê que, futuramente, se tornaria o herói da nação.", 2000);
         System.out.println("\n📜 Narrador: E seu nome? Seu nome era...");
-        pausar(1000);
+        pausar(750);
         System.out.print("💬 Digite o nome do seu herói: ");
 
         String nome = scanner.nextLine();
@@ -85,7 +87,9 @@ public class GameManager {
     }
 
     private Personagem escolherClasse(String nome) {
-        System.out.println("\n🎭 ESCOLHA SUA CLASSE, " + nome + ":");
+        System.out.println("📜 Narrador: Com muitos anos de treinamento e dedicação...");
+        imprimirComPausa(nome + " se especializou e decidiu ser um...", 2000);
+        System.out.print("💬 Escolha a classe de seu herói: \n\n");
         System.out.println("1. ⚔️  GUERREIRO");
         System.out.println("   - Vida: 80, Ataque: 12, Defesa: 8");
         System.out.println("   - Habilidade: Fúria Descontrolada (2D8)");
@@ -102,19 +106,19 @@ public class GameManager {
 
         switch (escolha) {
             case "1":
-                System.out.println("\n📜 Narrador: Um Guerreiro!");
+                System.out.println("\n📜 Narrador: Guerreiro!!!");
                 imprimirComPausa("Treinado na fortaleza de Pedra Alta, " + nome + " usa sua força bruta", 2000);
                 imprimirComPausa("e sua espada para proteger os inocentes.", 1500);
                 heroi = new Guerreiro(nome, 80, 12, 8, 1);
                 break;
             case "2":
-                System.out.println("\n📜 Narrador: Um Arqueiro!");
+                System.out.println("\n📜 Narrador: Arqueiro!!!");
                 imprimirComPausa("Vindo das florestas densas de Sylan, " + nome + " usa sua precisão", 2000);
                 imprimirComPausa("e agilidade para abater inimigos à distância.", 1500);
                 heroi = new Arqueiro(nome, 60, 10, 5, 1);
                 break;
             case "3":
-                System.out.println("\n📜 Narrador: Um Mago!");
+                System.out.println("\n📜 Narrador: Mago!!!");
                 imprimirComPausa("Estudante da Torre de Marfim, " + nome + " manipula as energias arcanas", 2000);
                 imprimirComPausa("para destruir seus oponentes com magias poderosas.", 1500);
                 heroi = new Mago(nome, 50, 8, 3, 1);
@@ -139,28 +143,28 @@ public class GameManager {
         if (heroi instanceof Guerreiro) {
             System.out.println("⚔️  Você encontra uma espada lendária da fortaleza!");
             heroi.aumentarAtaque(3);
-            heroi.getInventario().adicionarItem(new Item("Espada Lendária", "Aumenta ataque permanentemente", "ATK_UP:3", 1));
+            heroi.getInventario().adicionarItem(new Item("Espada Lendária", "Aumenta ATK +3", "ATK_UP:3", 1));
         } else if (heroi instanceof Arqueiro) {
             System.out.println("🏹 Você recebe um arco élfico das florestas!");
             heroi.aumentarAtaque(2);
-            heroi.getInventario().adicionarItem(new Item("Arco Élfico", "Aumenta precisão", "ATK_UP:2", 1));
+            heroi.getInventario().adicionarItem(new Item("Arco Élfico", "Aumenta PRC +2", "ATK_UP:2", 1));
         } else if (heroi instanceof Mago) {
             System.out.println("🔮 Você desbloqueia um grimório arcano antigo!");
             heroi.aumentarAtaque(2);
-            heroi.getInventario().adicionarItem(new Item("Grimório Arcano", "Aumenta poder mágico", "ATK_UP:2", 1));
+            heroi.getInventario().adicionarItem(new Item("Grimório Arcano", "Aumenta PDM +2", "ATK_UP:2", 1));
         }
         aguardarEnter();
     }
 
     private void exibirMenuPrincipal() {
-        System.out.println("\n" + "=".repeat(50));
+        System.out.println("=".repeat(50));
         System.out.println("                 🎮 MENU PRINCIPAL");
         System.out.println("=".repeat(50));
         System.out.println("📊 " + heroi.getNome() + " | Nível " + heroi.getNivel());
         System.out.println("❤️  Vida: " + heroi.getPontosVida() + "/" + heroi.getVidaMaxima());
         System.out.println("⚔️  Ataque: " + heroi.getAtaque() + " | 🛡️ Defesa: " + heroi.getDefesa());
 
-        // Mostra recursos específicos da classe
+
         if (heroi instanceof Guerreiro) {
             Guerreiro g = (Guerreiro) heroi;
             System.out.println("🔥 Fúria: " + g.getCargaFuria() + "/100");
@@ -195,7 +199,7 @@ public class GameManager {
                 menuExplorar();
                 break;
             case "2":
-                usarItem();
+                menuInventario();
                 break;
             case "3":
                 exibirStatusDetalhado();
@@ -292,23 +296,57 @@ public class GameManager {
         System.out.println();
         imprimirComPausa("🌄 Você entra na " + nomeLocal + "...", 1500);
 
-        // 25% chance de encontrar evento especial
+        Item itemEncontrado = null;
+
+        // 25% chance de encontrar evento de decisão
         if (random.nextDouble() < 0.25) {
-            imprimirComPausa("O caminho parece quieto...", 1500);
-            eventoEspecial();
+
+            if (random.nextDouble() < 0.50){
+                decisaoExploracao(tipoLocal);
+
+            }else {
+                imprimirComPausa("Você segue o caminho tranquilamente...", 1500);
+                imprimirComPausa("Até que...", 1500);
+                imprimirComPausa("Você avista algo no chão", 1500);
+
+                imprimirComPausa("💬 Deseja pegar o item?: (S/N)", 1500);
+                String decisao = scanner.nextLine().trim();
+
+                if (decisao.equalsIgnoreCase("S")) {
+                    if (random.nextDouble() < 0.50) {
+                        itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_COMUNS);
+                    } else {
+                        itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_LIXO);
+                    }
+                    if (itemEncontrado != null) {
+                        heroi.getInventario().adicionarItem(itemEncontrado);
+                        System.out.println("🎁 Você encontrou: " + itemEncontrado.getNome() + " e adicionou ao inventário.");
+                    }else{
+                        System.out.println("O objeto se desfez ao tocá-lo...");
+                    }
+                }else{
+                    System.out.println("Você ignora o objeto e segue em frente.");
+                }
+            }
             aguardarEnter();
-            return;
+        }
+        else if (random.nextDouble() < 0.15) {
+            eventoEspecial();
         }
 
-        // 10% chance de encontrar item raro
-        if (random.nextDouble() < 0.10) {
+        else if (random.nextDouble() < 0.10) {
             imprimirComPausa("Você encontra algo brilhando no chão...", 1500);
             encontrarItemRaro();
             aguardarEnter();
             return;
-        }
 
-        // 65% chance de encontrar inimigo
+        }else {
+            encontroInimigo(tipoLocal);
+        }
+    }
+
+    private void encontroInimigo(String tipoLocal) {
+
         imprimirComPausa("O ar fica pesado. Você ouve um barulho...", 2000);
         imprimirComPausa("...", 1000);
         imprimirComPausa("...", 1000);
@@ -335,12 +373,75 @@ public class GameManager {
             }
         } else if (heroi.estaMorto()) {
             return;
-        } else {
-            imprimirComPausa("Você se reagrupa e volta ao menu de locais...", 1500);
-            return;
+        }
+        aguardarEnter();
+    }
+
+    private void decisaoExploracao(String tipoLocal) {
+        System.out.println("\n🗺️ O caminho se bifurca:");
+        System.out.println("1. Caminho da Esquerda: Parece silencioso.");
+        System.out.println("2. Caminho da Direita: Você sente um mal olhar.");
+        System.out.print("🎯 Escolha o caminho (1 ou 2) ou digite 'V' para voltar: ");
+
+        String escolha = scanner.nextLine().trim();
+
+        switch (escolha) {
+            case "1":
+                // Caminho 1: 50% Armadilha, 50% Item
+                System.out.println("Você escolheu o caminho silencioso...");
+                if (random.nextDouble() < 0.5) {
+                    eventoArmadilha(); // Implementa a lógica de Armadilha (D20)
+                } else {
+                    System.out.println("Você anda por um tempo e...");
+                    pausar(1000);
+                    System.out.println("Encontra um báu perdido...");
+
+                    Item itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_COMUNS);
+
+                    heroi.getInventario().adicionarItem(itemEncontrado);
+
+                    System.out.println("🎁 Você abriu o baú! " + itemEncontrado.getNome() + " foi adicionado ao seu inventário");
+                    aguardarEnter();
+                }
+                break;
+
+            case "2":
+                // Caminho 2: Inimigo Garantido (com chance de ser mais forte)
+                System.out.println("Você escolheu ser corajoso...");
+                encontroInimigo(tipoLocal);
+                break;
+
+            case "V":
+                System.out.println("Você hesita e volta ao menu de locais.");
+                break;
+
+            default:
+                System.out.println("Escolha inválida. O herói perde tempo valioso.");
+        }
+    }
+
+    private void eventoArmadilha() {
+        System.out.println("\n⚠️  Você pisa em uma laje escondida!");
+        imprimirComPausa("Uma armadilha de espinhos se ativa...", 1500);
+
+        int danoFixo = 20;
+
+        int danoRecebido = danoFixo;
+
+        heroi.receberDano(danoRecebido);
+        System.out.println("❤️ HP atual: " + heroi.getPontosVida() + "/" + heroi.getVidaMaxima());
+
+    }
+
+    private static Item sortearItemDaLista(List<Item> lista) {
+        if (lista.isEmpty()) {
+            return new Item("Nulo", "Item Padrão", "LIXO:0", 1).copiar();
         }
 
-        aguardarEnter();
+        int indice = RANDOM.nextInt(lista.size());
+        Item itemBase = lista.get(indice);
+
+        return itemBase.copiar();
     }
 
     private void explorarVilaAbandonada() {
@@ -358,10 +459,14 @@ public class GameManager {
             heroi.aumentarAtaque(2);
             System.out.println("⚔️ Seu ataque aumenta em +2 devido ao conhecimento adquirido!");
         } else if (eventosEspeciaisAtivados == 2) {
-            System.out.println("💎 Você encontra um baú escondido com equipamentos raros!");
-            heroi.getInventario().adicionarItem(new Item("Armadura Rúnica", "Defesa lendária", "DEF_UP:10", 1));
-            heroi.aumentarDefesa(5);
-            System.out.println("🛡️ Sua defesa aumenta em +5!");
+            System.out.println("💎 Você encontra um baú escondido com equipamentos lendários!!!");
+
+            Item itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_LENDARIOS);
+
+            if (itemEncontrado != null) {
+                heroi.getInventario().adicionarItem(itemEncontrado);
+                System.out.println("🎁 Você ganhou: " + itemEncontrado.getNome() + "!");
+            }
         } else {
             System.out.println("⚔️ Você treina nas ruínas da vila, melhorando suas habilidades!");
             heroi.aumentarAtaque(3);
@@ -458,6 +563,9 @@ public class GameManager {
         Inimigo boss = new Inimigo("Dragão Negro", 250 + (heroi.getNivel() * 20), 30 + (heroi.getNivel() * 3), 20 + (heroi.getNivel() * 2), heroi.getNivel() + 2, "dragão");
 
         // Habilidades especiais do boss
+        System.out.println("\nDe acordo com o pergaminho você descobre as habilidades do Dragão...");
+        pausar(1000);
+        System.out.println("\nEle equipa...");
         boss.getInventario().adicionarItem(new Item("Sopro de Fogo", "Ataque devastador", "ATK_UP:25", 1));
         boss.getInventario().adicionarItem(new Item("Escamas Impenetráveis", "Defesa máxima", "DEF_UP:20", 1));
         boss.getInventario().adicionarItem(new Item("Poção de Cura Épica", "Cura completa", "CURA:200", 3));
@@ -470,9 +578,25 @@ public class GameManager {
         switch (evento) {
             case 0:
                 System.out.println("🎁 Você encontrou um baú perdido!");
-                Item pocao = new Item("Poção de Cura Grande", "Restaura 50 HP", "CURA:50", 1);
-                heroi.getInventario().adicionarItem(pocao);
-                System.out.println("✨ Você ganhou: " + pocao.getNome());
+
+                Item itemEncontrado;
+
+                if (random.nextDouble() < 0.70) {
+                    itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_COMUNS);
+                } else {
+                    itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_RAROS);
+                }
+
+                if (itemEncontrado != null) {
+
+                    heroi.getInventario().adicionarItem(itemEncontrado);
+
+                    System.out.println("✨ Você ganhou: " + itemEncontrado.getNome() + "!");
+
+                } else {
+                    System.out.println("O baú estava estranhamente vazio...");
+                }
+
                 break;
             case 1:
                 System.out.println("💫 Você encontra uma fonte mística e bebe sua água...");
@@ -525,80 +649,175 @@ public class GameManager {
     }
 
     private void encontrarItem() {
-        Item[] itensComuns = {
-                new Item("Poção de Cura", "Restaura 30 HP", "CURA:30", 1),
-                new Item("Elixir de Energia", "Restaura 15 HP", "CURA:15", 1),
-                new Item("Pedra de Afiar", "+3 Ataque por 1 batalha", "ATK_UP:3", 1),
-                new Item("Escudo Pequeno", "+2 Defesa", "DEF_UP:2", 1)
-        };
-        Item itemEncontrado = itensComuns[random.nextInt(itensComuns.length)];
-        heroi.getInventario().adicionarItem(itemEncontrado);
-        System.out.println("🎁 Você encontrou: " + itemEncontrado.getNome());
+
+        Item itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_COMUNS);
+
+        if (itemEncontrado != null) {
+
+            heroi.getInventario().adicionarItem(itemEncontrado);
+            System.out.println("🎁 Você encontrou: " + itemEncontrado.getNome() + "!");
+
+        } else {
+            System.out.println("O baú estava estranhamente vazio...");
+        }
     }
 
     private void encontrarItemRaro() {
-        Item[] itensRaros = {
-                new Item("Poção de Cura Épica", "Restaura 100 HP", "CURA:100", 1),
-                new Item("Elixir do Poder", "+10 Ataque permanente", "ATK_UP:10", 1),
-                new Item("Armadura de Mithril", "+8 Defesa permanente", "DEF_UP:8", 1),
-                new Item("Amuleto da Vida", "+25 Vida Máxima", "HP_UP:25", 1)
-        };
-        Item itemRaro = itensRaros[random.nextInt(itensRaros.length)];
-        heroi.getInventario().adicionarItem(itemRaro);
-        System.out.println("💎 VOCÊ ENCONTROU UM ITEM RARO: " + itemRaro.getNome());
 
-        // Aplica efeito imediato se for permanente
-        if (itemRaro.getTipoEfeito().equals("ATK_UP") && itemRaro.getValorEfeito() >= 10) {
-            heroi.aumentarAtaque(itemRaro.getValorEfeito());
-            System.out.println("⚔️ Ataque aumentado permanentemente!");
-        } else if (itemRaro.getTipoEfeito().equals("DEF_UP") && itemRaro.getValorEfeito() >= 8) {
-            heroi.aumentarDefesa(itemRaro.getValorEfeito());
-            System.out.println("🛡️ Defesa aumentada permanentemente!");
-        } else if (itemRaro.getTipoEfeito().equals("HP_UP")) {
-            heroi.setVidaMaxima(heroi.getVidaMaxima() + itemRaro.getValorEfeito());
-            heroi.curar(itemRaro.getValorEfeito());
-            System.out.println("❤️ Vida máxima aumentada!");
+        Item itemEncontrado = sortearItemDaLista(Item.LISTA_ITENS_RAROS);
+
+        if (itemEncontrado != null) {
+
+            heroi.getInventario().adicionarItem(itemEncontrado);
+            System.out.println("🎁 Você encontrou: " + itemEncontrado.getNome() + "!");
+
+        } else {
+            System.out.println("O baú estava estranhamente vazio...");
+        }
+
+    }
+
+    private void menuInventario() {
+        if (this.heroi.getInventario().estaVazio()) {
+            System.out.println("📭 Inventário vazio. Nada para gerenciar.");
+            aguardarEnter();
+            return;
+        }
+        while (true) {
+
+            System.out.println(this.heroi.getInventario().listarItens()); // Mostra o inventário atual
+            System.out.println("1. ✨ Usar Item (Poções, Elixires)");
+            System.out.println("2. 🗑️ Descartar Item");
+            System.out.println("0. 🔙 Voltar ao Menu Principal");
+            System.out.print("🎯 Escolha: ");
+
+            String escolha = scanner.nextLine();
+
+            switch (escolha) {
+                case "1":
+                    usarItem();
+                    return;
+                case "2":
+                    menuDescartarItens();
+                    return;
+                case "0":
+                    return; // Sai do menu de inventário
+                default:
+                    System.out.println("❌ Opção inválida. Tente novamente.");
+                    aguardarEnter();
+            }
         }
     }
 
     private void usarItem() {
-        System.out.println("🎒 INVENTÁRIO:");
         String listaItens = heroi.getInventario().listarItens();
         System.out.println(listaItens);
 
-        if (heroi.getInventario().estaVazio()) {
-            System.out.println("📭 O inventário está vazio.");
-            aguardarEnter();
+        System.out.print("💬 Digite o número do item que deseja usar (ou 0 para voltar): ");
+
+        if (!scanner.hasNextInt()) {
+            System.out.println("❌ Entrada inválida. Digite um número.");
+            scanner.nextLine();
             return;
         }
 
-        System.out.print("💬 Digite o nome do item para usar (ou 'voltar'): ");
-        String nomeItem = scanner.nextLine();
+        int escolha = scanner.nextInt();
+        scanner.nextLine();
 
-        if (nomeItem.equalsIgnoreCase("voltar")) {
+        if (escolha == 0) {
+            return; // Volta ao menu principal
+        }
+
+        Item itemParaUso = heroi.getInventario().buscarItemPorIndice(escolha);
+
+        if (itemParaUso == null) {
+            System.out.println("❌ Número de item inválido.");
             return;
         }
 
-        Optional<Item> itemOptional = heroi.getInventario().buscarItemPorNome(nomeItem);
+        Item itemConsumido = itemParaUso.copiar();
 
-        if (itemOptional.isEmpty()) {
-            System.out.println("❌ Item não encontrado no inventário.");
-            aguardarEnter();
-            return;
-        }
-
-        Item itemReal = itemOptional.get();
-
-        if (heroi.getInventario().removerUmaUnidade(itemReal.getNome())) {
-            aplicarEfeitoItem(itemReal);
+        if (heroi.getInventario().removerUmaUnidade(itemParaUso.getNome())) {
+            aplicarEfeitoItem(heroi, itemConsumido);
+            System.out.println("✨ " + itemConsumido.getNome() + " usado com sucesso!");
+            System.out.println("❤️ Status atual: " + heroi.getPontosVida() + "/" + heroi.getVidaMaxima() + " HP");
         } else {
-            System.out.println("❌ Erro ao usar o item.");
+            System.out.println("❌ Erro ao usar o item. Talvez a quantidade seja zero.");
+        }
+    }
+
+    private void menuDescartarItens() {
+
+        System.out.println(this.heroi.getInventario().listarItens());
+
+        if (this.heroi.getInventario().estaVazio()) {
+            aguardarEnter();
+            return;
+        }
+
+        System.out.print("💬 Digite o número do item que deseja descartar (ou 0 para voltar): ");
+
+        // 1. Tenta ler um número (e trata exceção se for uma String)
+        if (!scanner.hasNextInt()) {
+            System.out.println("❌ Entrada inválida. Por favor, digite um número.");
+            scanner.nextLine(); // Consome a linha inválida
+            aguardarEnter();
+            return;
+        }
+
+        int indiceEscolha = scanner.nextInt();
+        scanner.nextLine(); // Consome o resto da linha
+
+        if (indiceEscolha == 0) return;
+
+        // 2. Busca o item pelo ÍNDICE (Corrigindo o fluxo)
+        Item itemParaDescarte = this.heroi.getInventario().buscarItemPorIndice(indiceEscolha);
+
+        if (itemParaDescarte == null) {
+            System.out.println("❌ Número de item inválido ou item não encontrado.");
+            aguardarEnter();
+            return;
+        }
+
+        // O nome do item é puxado do objeto encontrado
+        String nomeItem = itemParaDescarte.getNome();
+
+        // 3. Pedir a Quantidade
+        // O restante da lógica de quantidade e remoção pode ser reutilizada
+        try {
+            System.out.print(String.format("💬 Quantas unidades de '%s' deseja descartar? (Disponível: %d): ",
+                    nomeItem, itemParaDescarte.getQuantidade()));
+
+            int quantidade = Integer.parseInt(scanner.nextLine());
+
+            if (quantidade <= 0) {
+                System.out.println("❌ A quantidade deve ser maior que zero.");
+            } else if (quantidade > itemParaDescarte.getQuantidade()) {
+                System.out.println("❌ Você não tem essa quantidade de itens.");
+            } else {
+                // 4. Delegar o Descarte (Cria o Item temporário para o removerItem)
+                Item itemTemporarioParaRemocao = new Item(
+                        nomeItem,
+                        itemParaDescarte.getDescricao(),
+                        itemParaDescarte.getEfeito(),
+                        quantidade
+                );
+
+                if (this.heroi.getInventario().removerItem(itemTemporarioParaRemocao)) {
+                    System.out.println(String.format("🗑️ %d unidade(s) de '%s' descartada(s) com sucesso!", quantidade, nomeItem));
+                } else {
+                    System.out.println("❌ Falha interna ao descartar o item.");
+                }
+            }
+
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Entrada inválida. Por favor, digite um número.");
         }
 
         aguardarEnter();
     }
 
-    private void aplicarEfeitoItem(Item item) {
+    private void aplicarEfeitoItem(Personagem heroi, Item item) {
         String tipoEfeito = item.getTipoEfeito();
         int valorEfeito = item.getValorEfeito();
 
